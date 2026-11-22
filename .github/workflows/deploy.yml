@@ -1,0 +1,87 @@
+name: Deploy to VPS
+
+# Manual only. Needs three repository secrets (Settings → Secrets and
+# variables → Actions): SSH_HOST, SSH_USER, SSH_PASSWORD.
+#   mode=inspect  read-only snapshot of the server (changes nothing)
+#   mode=deploy   build, upload and release to https://sarak.zarazoqi.ir
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "inspect (read-only) or deploy"
+        type: choice
+        options: [inspect, deploy]
+        default: inspect
+
+concurrency:
+  group: deploy-sarak
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    env:
+      SSHPASS: ${{ secrets.SSH_PASSWORD }}
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_USER: ${{ secrets.SSH_USER }}
+      DOMAIN: sarak.zarazoqi.ir
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check secrets
+        run: |
+          missing=""
+          [ -n "$SSHPASS" ] || missing="$missing SSH_PASSWORD"
+          [ -n "$SSH_HOST" ] || missing="$missing SSH_HOST"
+          [ -n "$SSH_USER" ] || missing="$missing SSH_USER"
+          if [ -n "$missing" ]; then echo "::error::missing secrets:$missing"; exit 1; fi
+
+      - name: Install sshpass
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq sshpass
+
+      - name: Inspect server (read-only)
+        if: inputs.mode == 'inspect'
+        run: |
+          sshpass -e ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20 \
+            "$SSH_USER@$SSH_HOST" "DOMAIN=$DOMAIN bash -s" < deploy/inspect.sh
+
+      - uses: pnpm/action-setup@v4
+        if: inputs.mode == 'deploy'
+
+      - uses: actions/setup-node@v4
+        if: inputs.mode == 'deploy'
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Build
+        if: inputs.mode == 'deploy'
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm build
+          mkdir -p bundle
+          cp -r .next/standalone/. bundle/
+          mkdir -p bundle/.next
+          cp -r .next/static bundle/.next/static
+          cp -r public bundle/public
+          tar -czf sarak-story.tgz -C bundle .
+          ls -lh sarak-story.tgz
+
+      - name: Release
+        if: inputs.mode == 'deploy'
+        run: |
+          OPTS="-o StrictHostKeyChecking=accept-new -o ConnectTimeout=20"
+          sshpass -e scp $OPTS sarak-story.tgz deploy/release.sh "$SSH_USER@$SSH_HOST:/tmp/"
+          sshpass -e ssh $OPTS "$SSH_USER@$SSH_HOST" \
+            "DOMAIN=$DOMAIN bash /tmp/release.sh /tmp/sarak-story.tgz ${GITHUB_SHA::7} && rm -f /tmp/sarak-story.tgz /tmp/release.sh"
+
+      - name: Check from the internet
+        if: inputs.mode == 'deploy'
+        run: |
+          sleep 3
+          curl -sS -o /dev/null -w "https://$DOMAIN -> %{http_code}\n" --fail "https://$DOMAIN/"
+          echo | openssl s_client -connect "$DOMAIN:443" -servername "$DOMAIN" 2>/dev/null \
+            | openssl x509 -noout -subject -issuer -enddate
