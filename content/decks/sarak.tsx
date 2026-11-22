@@ -487,7 +487,7 @@ const igSlide = (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
       <div className="flex min-w-0 flex-col gap-5">
         <Reveal delay={0}>
-          <Screenshot src={igShot.src} alt={igShot.alt} caption={igShot.caption} ratio="1919 / 858" />
+          <Screenshot src={igShot.src} alt={igShot.alt} caption={igShot.caption} ratio="1500 / 725" />
         </Reveal>
         <Reveal delay={120}>
           <div className="grid gap-3 sm:grid-cols-2">
