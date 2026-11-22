@@ -24,3 +24,12 @@ GitHub Actions → "Deploy to VPS" → Run workflow. Needs repository secrets
   server. The app runs as its own systemd service (`sarak-story`) on
   127.0.0.1; nginx gets one site file for this domain only (checked with
   `nginx -t`, rolled back on failure); TLS via `certbot certonly --webroot`.
+
+Without Actions secrets, run on the server as root (public repo):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/m-aghazadeh/sarak-story/claude/dreamy-knuth-fhidkc/deploy/bootstrap.sh | bash
+```
+
+It prints the read-only snapshot, builds with a private Node in
+/opt/sarak-story, then runs the same `release.sh`.
