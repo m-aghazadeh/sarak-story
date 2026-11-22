@@ -1,0 +1,317 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------ *
+ * Design tokens — see Design.md
+ * ------------------------------------------------------------------ */
+:root {
+  /* Brand — Sarak (sarak-co.com CSS tokens) */
+  --primary: #72000e; /* --color-brand / brand-500 · logo fill */
+  --primary-foreground: #ffffff;
+  --secondary: #8e333e; /* --color-brand-400 */
+  --secondary-foreground: #ffffff;
+
+  /* Surfaces & ink — warm neutrals (harmonised with --color-brandGray #DDDAD9) */
+  --bg: #ffffff;
+  --bg-elev: #ffffff;
+  --surface: #faf9f8;
+  --surface-2: #f2f0ef;
+  --line: rgba(28, 26, 26, 0.1);
+  --line-strong: rgba(28, 26, 26, 0.2);
+  --ink: #1c1a1a;
+  --ink-2: #55504f;
+  --ink-3: #736d6c;
+
+  /* Accent — the one red of the deck */
+  --accent: #72000e;
+  --accent-2: #8e333e;
+  --accent-ink: #ffffff;
+  --accent-soft: rgba(114, 0, 14, 0.1);
+
+  /* Data series — validated (dataviz validator, light, surface #fff).
+   * Slot 1 is the brand red; slots 2–4 carry no red. */
+  --series-1: #72000e;
+  --series-2: #2f72b8;
+  --series-3: #a8740f;
+  --series-4: #078a6e;
+
+  /* Status — no second red: "bad" is the brand red, always paired with text. */
+  --good: #3d6b4f;
+  --warn: #8a6414;
+  --bad: #72000e;
+
+  /* Type scale */
+  --fs-display: clamp(2.5rem, 1.5rem + 4vw, 5rem);
+  --fs-h1: clamp(2rem, 1.3rem + 2.6vw, 3.25rem);
+  --fs-h2: clamp(1.5rem, 1.1rem + 1.4vw, 2rem);
+  --fs-lead: clamp(1.1rem, 1rem + 0.5vw, 1.4rem);
+  --fs-body: 1rem;
+  --fs-small: 0.875rem;
+
+  /* Radius */
+  --r-sm: 8px;
+  --r-md: 14px;
+  --r-lg: 22px;
+  --r-pill: 999px;
+
+  /* Shadow */
+  --shadow: 0 24px 50px -24px rgba(28, 26, 26, 0.22);
+  --shadow-sm: 0 10px 24px -14px rgba(28, 26, 26, 0.16);
+
+  /* Layout */
+  --content-max: 72rem;
+  --slide-pad: clamp(1.5rem, 5vw, 5rem);
+
+  /* Motion */
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --t-fast: 180ms;
+  --t: 420ms;
+  --t-slow: 680ms;
+}
+
+/* Expose tokens to Tailwind v4 utilities */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-elev: var(--bg-elev);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-accent: var(--accent);
+  --color-accent-2: var(--accent-2);
+  --color-good: var(--good);
+  --color-warn: var(--warn);
+  --color-bad: var(--bad);
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+
+  --font-sans: var(--font-alibaba), ui-sans-serif, system-ui, sans-serif;
+
+  /* Named numeric font weights (enable font-300 … font-700 utilities) */
+  --font-weight-300: 300;
+  --font-weight-400: 400;
+  --font-weight-500: 500;
+  --font-weight-600: 600;
+  --font-weight-700: 700;
+}
+
+/* ------------------------------------------------------------------ *
+ * Base
+ * ------------------------------------------------------------------ */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+  color-scheme: light;
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+body {
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow: hidden; /* deck manages its own scroll */
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+/* Numeric figures use the mono/tabular face */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* Thin custom scrollbars inside scrollable slides */
+.slide-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+.slide-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+.slide-scroll::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: var(--r-pill);
+}
+.slide-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Accent text gradient */
+.text-gradient {
+  background: linear-gradient(115deg, var(--accent) 0%, var(--accent-2) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Subtle grid / glow backdrops for slides */
+.bg-grid {
+  background-image:
+    linear-gradient(var(--line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 30%, transparent 75%);
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 30%, transparent 75%);
+}
+
+.bg-glow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(60% 55% at 78% 15%, var(--accent-soft), transparent 60%),
+    radial-gradient(50% 50% at 12% 85%, rgba(221, 218, 217, 0.45), transparent 62%);
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------------------ *
+ * Enter animations (driven by [data-active] on the active slide)
+ * ------------------------------------------------------------------ */
+@keyframes riseIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Elements opt in with .anim; they start hidden and only animate on the
+ * active slide. Stagger via inline --d (delay). */
+.anim {
+  opacity: 0;
+}
+[data-active="true"] .anim {
+  animation: riseIn var(--t-slow) var(--ease) both;
+  animation-delay: var(--d, 0ms);
+}
+[data-active="true"] .anim-fade {
+  animation-name: fadeIn;
+}
+
+/* ------------------------------------------------------------------ *
+ * Chart enter animations (replay when the slide becomes active)
+ * ------------------------------------------------------------------ */
+@keyframes chartDraw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes chartGrow {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+.chart-line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+[data-active="true"] .chart-line {
+  animation: chartDraw 1.1s var(--ease) forwards;
+}
+
+.chart-area,
+.chart-dot,
+.chart-label {
+  opacity: 0;
+}
+[data-active="true"] .chart-area,
+[data-active="true"] .chart-dot,
+[data-active="true"] .chart-label {
+  animation: fadeIn 0.45s ease both;
+  animation-delay: var(--cd, 0ms);
+}
+
+.chart-bar {
+  transform: scaleY(0);
+  transform-box: fill-box;
+  transform-origin: bottom;
+}
+[data-active="true"] .chart-bar {
+  animation: chartGrow 0.75s var(--ease) both;
+  animation-delay: var(--cd, 0ms);
+}
+
+/* ------------------------------------------------------------------ *
+ * Deck layout (the vertical slide runner)
+ * ------------------------------------------------------------------ */
+.deck-viewport {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+.deck-track {
+  height: 100%;
+  will-change: transform;
+  transform: translateY(calc(var(--active, 0) * -100dvh));
+  transition: transform var(--t-slow) var(--ease);
+}
+
+.deck-slide {
+  height: 100dvh;
+}
+
+.deck-slide-scroll {
+  height: 100dvh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .deck-track {
+    transition: none;
+  }
+  .anim,
+  [data-active="true"] .anim,
+  .chart-area,
+  .chart-dot,
+  .chart-label,
+  .chart-bar,
+  .chart-line,
+  [data-active="true"] .chart-area,
+  [data-active="true"] .chart-dot,
+  [data-active="true"] .chart-label,
+  [data-active="true"] .chart-bar,
+  [data-active="true"] .chart-line {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    stroke-dashoffset: 0 !important;
+  }
+  * {
+    scroll-behavior: auto !important;
+  }
+}
